@@ -1,0 +1,125 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+
+namespace ConsoleApp2
+{
+    public static class TemporaryClass
+    {
+        public static void GetFile()
+        {
+            List<int> temp = GenerateList();
+
+            var fileName = @"C:\Users\wits\source\repos\ConsoleApp2\ConsoleApp2\retail.dat.txt";
+            var fileName2 = @"C:\Users\wits\source\repos\ConsoleApp2\ConsoleApp2\retailFull.txt";
+            using (StreamReader sr = File.OpenText(fileName))
+            {
+                var lines = File.ReadAllLines(fileName);
+                AssignNumberOfOccurencesForTemp(temp, lines);
+            }
+
+            var mostFrequent = MostFrequent(temp);
+
+            List<int> columnsList = new List<int>();
+            string columns = GetColumnList(temp, columnsList);
+
+            using (StreamWriter stream = File.AppendText(fileName2))
+            {
+                stream.WriteLine(columns);
+            }
+
+            temp = GenerateList();
+
+            using (StreamReader sr = File.OpenText(fileName))
+            {
+                int y = 0;
+                foreach (var ss in File.ReadAllLines(fileName))
+                {
+                    foreach (var cell in ss.Split(' '))
+                    {
+                        if (int.TryParse(cell, out int res))
+                        {
+                            if (columnsList.Contains(res))
+                                temp[columnsList.IndexOf(res)] = 1;
+                        }
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    if (temp.Any(m => m == 1))
+                    {
+                        foreach (var sss in temp)
+                        {
+                            sb.Append($"{sss};");
+                        }
+                        using (StreamWriter stream = File.AppendText(fileName2))
+                        {
+                            stream.WriteLine(sb.ToString());
+                        }
+                    }
+
+                    temp = GenerateList();
+
+                    y++;
+                }
+
+            }
+        }
+
+        private static string GetColumnList(List<int> temp, List<int> columnsList)
+        {
+            int counter = 0;
+            int counter2 = 0;
+            var columns = "";
+            foreach (var tt in temp)
+            {
+                if (tt > 0)
+                {
+                    columnsList.Add(counter2);
+                    columns = columns + counter2 + ";";
+                    counter++;
+                }
+                counter2++;
+            }
+
+            return columns;
+        }
+
+        private static Dictionary<int, int> MostFrequent(List<int> temp)
+        {
+            var mostFrequent = new Dictionary<int, int> ();
+            var ordered = temp.OrderByDescending(m => m).Select(m => m);
+            for (int i = 0; i < 10; i++)
+            {
+                mostFrequent.Add(temp.IndexOf(ordered.ElementAt(i)), ordered.ElementAt(i));
+            }
+            return mostFrequent;
+        }
+
+        private static void AssignNumberOfOccurencesForTemp(List<int> temp, string[] lines)
+        {
+            foreach (var ss in lines)
+            {
+                foreach (var cell in ss.Split(' '))
+                {
+                    if (int.TryParse(cell, out int res))
+                    {
+                        if (res != 0)
+                            temp[res] = temp[res] + 1;
+                    }
+                }
+            }
+        }
+
+        private static List<int> GenerateList()
+        {
+            var list = new List<int>();
+            for (int i = 0; i < 16500; i++)
+            {
+                list.Add(0);
+            }
+            return list;
+        }
+
+    }
+}
